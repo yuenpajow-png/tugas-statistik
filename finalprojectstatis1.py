@@ -11,7 +11,7 @@ with st.sidebar:
     uploaded_file = st.file_uploader("Unggah file data_survei.csv di sini", type=["csv"])
 
 # --- HALAMAN UTAMA ---
-st.markdown("<h1 style='text-align: center;'>🏠 Home</h1>", unsafe_allow_status=True)
+st.title("🏠 Home")
 
 st.write("Welcome to Survey Data Analysis App! This app allows you to analyze survey data with descriptive statistics, frequency tables, visualizations, and correlation analysis. Let's dive into the world of data insights! ✨")
 
@@ -30,7 +30,6 @@ st.markdown("---")
 # --- LOGIKA ANALISIS ---
 if uploaded_file is not None:
     df = pd.read_csv(uploaded_file)
-    
     st.success("Data berhasil diunggah!")
     
     tab1, tab2 = st.tabs(["📊 Statistik Deskriptif", "🔗 Analisis Korelasi"])
@@ -41,16 +40,13 @@ if uploaded_file is not None:
         
     with tab2:
         st.subheader("Hasil Analisis Asosiasi")
-        
-        # Otomatis deteksi kolom (asumsi kolom terakhir dan kedua terakhir)
         cols = df.columns.tolist()
         if len(cols) >= 2:
-            x_col = st.selectbox("Pilih Variabel X", cols)
-            y_col = st.selectbox("Pilih Variabel Y", cols)
+            x_col = st.selectbox("Pilih Variabel X", cols, key="x_var")
+            y_col = st.selectbox("Pilih Variabel Y", cols, key="y_var")
             
             if st.button("Hitung Korelasi"):
                 r_val, p_val = stats.pearsonr(df[x_col], df[y_col])
-                
                 col1, col2 = st.columns(2)
                 col1.metric("Nilai Korelasi (r)", f"{r_val:.2f}")
                 col2.metric("P-Value", f"{p_val:.3f}")
@@ -60,4 +56,4 @@ if uploaded_file is not None:
                 else:
                     st.warning("Kesimpulan: Tidak ada hubungan signifikan.")
 else:
-    st.info("Silakan unggah file CSV di sidebar untuk memulai analisis.")
+    st.info("Silakan unggah file CSV di sidebar (klik tanda > di pojok kiri atas) untuk memulai.")
