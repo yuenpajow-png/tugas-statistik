@@ -1,45 +1,63 @@
 import streamlit as st
 import pandas as pd
-from scipy import stats
+import scipy.stats as stats
 
-st.set_page_config(page_title="Analisis Statistika", layout="wide")
-st.title("📊 Aplikasi Analisis Survei Final Project")
+# Konfigurasi Halaman
+st.set_page_config(page_title="Survey Analysis App", page_icon="📊")
 
-# Fitur Upload File di Web
-uploaded_file = st.file_uploader("Unggah file data_survei.csv di sini", type=["csv"])
+# --- SIDEBAR ---
+with st.sidebar:
+    st.title("Settings ⚙️")
+    uploaded_file = st.file_uploader("Unggah file data_survei.csv di sini", type=["csv"])
 
+# --- HALAMAN UTAMA ---
+st.markdown("<h1 style='text-align: center;'>🏠 Home</h1>", unsafe_allow_status=True)
+
+st.write("Welcome to Survey Data Analysis App! This app allows you to analyze survey data with descriptive statistics, frequency tables, visualizations, and correlation analysis. Let's dive into the world of data insights! ✨")
+
+st.markdown("---")
+
+st.markdown("## 🌟 Features")
+st.markdown("""
+* **Descriptive Statistics**: Calculate means, medians, and more for your data.
+* **Frequency Tables**: View frequency and percentage distributions.
+* **Correlation Analysis**: Find relationships between your variables (X and Y).
+* **Created by**: yuen keysi & Group 3
+""")
+
+st.markdown("---")
+
+# --- LOGIKA ANALISIS ---
 if uploaded_file is not None:
     df = pd.read_csv(uploaded_file)
-    st.success("Data Berhasil Dimuat!")
-
-    # Mengambil semua nama kolom dari file kamu
-    all_columns = df.columns.tolist()
     
-    st.info("Silakan pilih kolom mana yang termasuk Variabel X dan Y di bawah ini:")
+    st.success("Data berhasil diunggah!")
     
-    col1, col2 = st.columns(2)
-    with col1:
-        selected_x = st.multiselect("Pilih kolom untuk Variabel X:", all_columns)
-    with col2:
-        selected_y = st.multiselect("Pilih kolom untuk Variabel Y:", all_columns)
-
-    if selected_x and selected_y:
-        # Hitung Skor (Poin 20%)
-        df['X_total'] = df[selected_x].mean(axis=1)
-        df['Y_total'] = df[selected_y].mean(axis=1)
+    tab1, tab2 = st.tabs(["📊 Statistik Deskriptif", "🔗 Analisis Korelasi"])
+    
+    with tab1:
+        st.subheader("Tabel Statistik Deskriptif")
+        st.write(df.describe())
         
-        st.subheader("1. Statistik Deskriptif")
-        st.write(df[['X_total', 'Y_total']].describe().T)
-
-        # Hitung Korelasi Pearson (Poin 20%)
-        r, p = stats.pearsonr(df['X_total'], df['Y_total'])
-        st.subheader("2. Hasil Analisis Asosiasi")
-        st.metric("Nilai Korelasi (r)", round(r, 3))
-        st.metric("P-Value (Signifikansi)", round(p, 4))
+    with tab2:
+        st.subheader("Hasil Analisis Asosiasi")
         
-        if p < 0.05:
-            st.success("Kesimpulan: Ada hubungan signifikan.")
-        else:
-            st.warning("Kesimpulan: Tidak ada hubungan signifikan.")
+        # Otomatis deteksi kolom (asumsi kolom terakhir dan kedua terakhir)
+        cols = df.columns.tolist()
+        if len(cols) >= 2:
+            x_col = st.selectbox("Pilih Variabel X", cols)
+            y_col = st.selectbox("Pilih Variabel Y", cols)
+            
+            if st.button("Hitung Korelasi"):
+                r_val, p_val = stats.pearsonr(df[x_col], df[y_col])
+                
+                col1, col2 = st.columns(2)
+                col1.metric("Nilai Korelasi (r)", f"{r_val:.2f}")
+                col2.metric("P-Value", f"{p_val:.3f}")
+                
+                if p_val < 0.05:
+                    st.success("Kesimpulan: Ada hubungan signifikan.")
+                else:
+                    st.warning("Kesimpulan: Tidak ada hubungan signifikan.")
 else:
-    st.warning("Menunggu kamu mengunggah file data_survei.csv...")
+    st.info("Silakan unggah file CSV di sidebar untuk memulai analisis.")
