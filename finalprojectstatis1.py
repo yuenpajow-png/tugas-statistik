@@ -5,55 +5,64 @@ import scipy.stats as stats
 # Konfigurasi Halaman
 st.set_page_config(page_title="Survey Analysis App", page_icon="📊")
 
-# --- SIDEBAR ---
+# --- SIDEBAR NAVIGASI ---
 with st.sidebar:
-    st.title("Settings ⚙️")
-    uploaded_file = st.file_uploader("Unggah file data_survei.csv di sini", type=["csv"])
+    st.title("Main Menu 📋")
+    # Ini yang bikin menu navigasi bulet-bulet seperti kelompok sebelah
+    selected = st.radio("Go to:", ["Home", "App", "Developer Team"])
+    st.markdown("---")
+    st.write("Language: EN/ID")
 
-# --- HALAMAN UTAMA ---
-st.title("🏠 Home")
-
-st.write("Welcome to Survey Data Analysis App! This app allows you to analyze survey data with descriptive statistics, frequency tables, visualizations, and correlation analysis. Let's dive into the world of data insights! ✨")
-
-st.markdown("---")
-
-st.markdown("## 🌟 Features")
-st.markdown("""
-* **Descriptive Statistics**: Calculate means, medians, and more for your data.
-* **Frequency Tables**: View frequency and percentage distributions.
-* **Correlation Analysis**: Find relationships between your variables (X and Y).
-* **Created by**: yuen keysi & Group 3
-""")
-
-st.markdown("---")
-
-# --- LOGIKA ANALISIS ---
-if uploaded_file is not None:
-    df = pd.read_csv(uploaded_file)
-    st.success("Data berhasil diunggah!")
+# --- HALAMAN 1: HOME ---
+if selected == "Home":
+    st.title("🏠 Home")
+    st.write("Welcome to Survey Data Analysis App! This app allows you to analyze survey data with descriptive statistics, frequency tables, visualizations, and correlation analysis. Let's dive into the world of data insights! ✨")
     
-    tab1, tab2 = st.tabs(["📊 Statistik Deskriptif", "🔗 Analisis Korelasi"])
+    st.markdown("---")
+    st.markdown("## 🌟 Features")
+    st.markdown("""
+    * **Descriptive Statistics**: Calculate means, medians, and more.
+    * **Frequency Tables**: View frequency and percentage distributions.
+    * **Correlation Analysis**: Find relationships between your variables.
+    """)
+
+# --- HALAMAN 2: APP (Tempat Upload & Hitung) ---
+elif selected == "App":
+    st.title("🚀 Data Analysis App")
+    st.info("Upload file data_survei.csv di bawah ini untuk memulai.")
     
-    with tab1:
-        st.subheader("Tabel Statistik Deskriptif")
-        st.write(df.describe())
+    uploaded_file = st.file_uploader("Choose a CSV file", type=["csv"])
+    
+    if uploaded_file is not None:
+        df = pd.read_csv(uploaded_file)
+        st.success("Data loaded successfully!")
         
-    with tab2:
-        st.subheader("Hasil Analisis Asosiasi")
-        cols = df.columns.tolist()
-        if len(cols) >= 2:
-            x_col = st.selectbox("Pilih Variabel X", cols, key="x_var")
-            y_col = st.selectbox("Pilih Variabel Y", cols, key="y_var")
+        tab1, tab2 = st.tabs(["📊 Statistics", "🔗 Correlation"])
+        
+        with tab1:
+            st.subheader("Descriptive Statistics")
+            st.write(df.describe())
             
-            if st.button("Hitung Korelasi"):
+        with tab2:
+            st.subheader("Correlation Analysis")
+            cols = df.columns.tolist()
+            x_col = st.selectbox("Select Variable X", cols, key="x_var")
+            y_col = st.selectbox("Select Variable Y", cols, key="y_var")
+            
+            if st.button("Calculate"):
                 r_val, p_val = stats.pearsonr(df[x_col], df[y_col])
-                col1, col2 = st.columns(2)
-                col1.metric("Nilai Korelasi (r)", f"{r_val:.2f}")
-                col2.metric("P-Value", f"{p_val:.3f}")
-                
-                if p_val < 0.05:
-                    st.success("Kesimpulan: Ada hubungan signifikan.")
-                else:
-                    st.warning("Kesimpulan: Tidak ada hubungan signifikan.")
-else:
-    st.info("Silakan unggah file CSV di sidebar (klik tanda > di pojok kiri atas) untuk memulai.")
+                c1, c2 = st.columns(2)
+                c1.metric("Correlation (r)", f"{r_val:.2f}")
+                c2.metric("P-Value", f"{p_val:.3f}")
+
+# --- HALAMAN 3: DEVELOPER TEAM ---
+elif selected == "Developer Team":
+    st.title("👥 Developer Team")
+    st.write("Aplikasi ini dikembangkan oleh:")
+    st.markdown("""
+    ### **Group 3**
+    1. **yuen keysi** (Lead Developer)
+    2. Member 2
+    3. Member 3
+    """)
+    st.info("Final Project Statistika - President University")
